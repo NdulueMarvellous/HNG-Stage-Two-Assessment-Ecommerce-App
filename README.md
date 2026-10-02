@@ -149,6 +149,16 @@ to wherever they were heading (e.g. back to checkout).
 If something is misconfigured, the `/auth/callback` page shows the provider's error
 message with a link back to sign-in rather than a blank screen.
 
+> **`{"error_code":"validation_failed","msg":"Unsupported provider: provider is not enabled"}`**
+> means step 4 was skipped - the Google provider is still switched *off* in Supabase.
+> You see raw JSON rather than an in-app message because `signInWithOAuth()` sends the
+> browser directly to Supabase's `/auth/v1/authorize` endpoint, so that JSON **is** the
+> page the browser lands on and the app is no longer running to catch it. The login page
+> reads `/auth/v1/settings` on load and disables the Google button when the provider is
+> off, so this should not happen - but if you hit it, enable Google and hard-refresh.
+> Verify with `curl https://<ref>.supabase.co/auth/v1/settings -H "apikey: <anon-key>"`
+> and check that `"google": true`.
+
 ---
 
 ## 3. Mailgun setup

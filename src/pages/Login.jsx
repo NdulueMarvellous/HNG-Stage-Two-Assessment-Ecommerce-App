@@ -9,7 +9,14 @@ import { isSupabaseConfigured } from '../lib/supabase';
 const REDIRECT_KEY = 'techmart.redirectAfterAuth';
 
 export default function Login() {
-  const { isAuthenticated, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const {
+    isAuthenticated,
+    loading,
+    signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
+    googleEnabled,
+  } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -102,10 +109,26 @@ export default function Login() {
             </div>
           ) : null}
 
+          {googleEnabled === false ? (
+            <div className="mt-5">
+              <Alert variant="warning" title="Google sign-in is not enabled">
+                <p>
+                  The Google provider is switched off for this Supabase project, so the button below
+                  is disabled. Use email and password instead, or enable Google under{' '}
+                  <strong>Authentication &rarr; Providers</strong> in your Supabase dashboard (see
+                  the README).
+                </p>
+              </Alert>
+            </div>
+          ) : null}
+
           <button
             type="button"
             onClick={handleGoogle}
-            disabled={busy || !isSupabaseConfigured}
+            disabled={busy || !isSupabaseConfigured || googleEnabled === false}
+            title={
+              googleEnabled === false ? 'Google sign-in is not enabled for this project.' : undefined
+            }
             className="btn-secondary mt-6 w-full"
           >
             {busy ? <Spinner className="h-4 w-4" /> : null}

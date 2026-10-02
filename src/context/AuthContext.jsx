@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, isProviderEnabled } from '../lib/supabase';
 import { getErrorMessage } from '../lib/errors';
 
 const AuthContext = createContext(null);
@@ -17,6 +17,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  // `null` means "not known yet" - the Google button stays enabled until we know
+  // the provider is genuinely switched off.
+  const [googleEnabled, setGoogleEnabled] = useState(null);
 
   const fetchProfile = useCallback(async (userId) => {
     if (!userId || !isSupabaseConfigured) return null;
@@ -79,10 +82,31 @@ export function AuthProvider({ children }) {
     };
   }, [fetchProfile]);
 
+  // Google can be switched off in the dashboard. Supabase answers a request for a
+  // disabled provider with a raw JSON error page, so ask up front and disable the
+  // button instead of letting the browser navigate into that.
+  useEffect(() => {
+    let active = true;
+    isProviderEnabled('google').then((enabled) => {
+      if (active) setGoogleEnabled(enabled);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   /** Google OAuth - redirects to Google, then back to <origin>/auth/callback. */
   const signInWithGoogle = useCallback(async () => {
     if (!isSupabaseConfigured) {
       throw new Error('Supabase is not configured yet. Add your keys to .env to enable sign-in.');
+    }
+    // Re-check immediately before navigating. For a provider that is not enabled
+    // Supabase renders a JSON page, and by then the browser has already left the
+    // app, so a try/catch in the calling component could never see the error.
+    if ((await isProviderEnabled('google')) === false) {
+      throw new Error(
+        'Google sign-in is not enabled for this project yet. Turn it on under Authentication -> Providers in the Supabase dashboard.',
+      );
     }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -151,6 +175,7 @@ export function AuthProvider({ children }) {
       user,
       profile,
       loading,
+      googleEnabled,
       isAuthenticated: Boolean(user),
       displayName:
         profile?.full_name ||
@@ -172,6 +197,7 @@ export function AuthProvider({ children }) {
       user,
       profile,
       loading,
+      googleEnabled,
       signInWithGoogle,
       signInWithEmail,
       signUpWithEmail,
