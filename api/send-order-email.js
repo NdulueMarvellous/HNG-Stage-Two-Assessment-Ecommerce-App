@@ -2,9 +2,9 @@
  * POST /api/send-order-email
  * ---------------------------------------------------------------------------
  * Serverless function (runs on Vercel, and locally via the vite.config.js
- * middleware) that emails an order confirmation through Mailgun.
+ * middleware) that emails an order confirmation over SMTP with Nodemailer.
  *
- * It never runs in the browser, so MAILGUN_API_KEY stays on the server.
+ * It never runs in the browser, so the SMTP password stays on the server.
  * There is no service-role key here either: the function forwards the
  * caller's own Supabase access token to PostgREST, so Row Level Security
  * decides what can be read and a user can only ever email their own order.
@@ -12,19 +12,73 @@
  * Request  { orderId: "<uuid>" }   with header  Authorization: Bearer <access_token>
  * Response { emailSent: true, message: "..." }
  */
+import nodemailer from 'nodemailer';
+
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
-const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
-const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN;
-const MAILGUN_API_BASE = String(process.env.MAILGUN_API_BASE || 'https://api.mailgun.net').replace(/\/+$/, '');
-const FROM_EMAIL = process.env.MAILGUN_FROM_EMAIL;
-const FROM_NAME = process.env.MAILGUN_FROM_NAME || 'TechMart Orders';
-const REPLY_TO = process.env.MAILGUN_REPLY_TO;
+// ---- SMTP (server only - see README "Email setup") -------------------------
+const SMTP_SERVICE = process.env.SMTP_SERVICE;
+const SMTP_URL = process.env.SMTP_URL;
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
+const SMTP_SECURE = parseBool(process.env.SMTP_SECURE);
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+
+const FROM_EMAIL = process.env.MAIL_FROM_EMAIL;
+const FROM_NAME = process.env.MAIL_FROM_NAME || 'TechMart Orders';
+const REPLY_TO = process.env.MAIL_REPLY_TO;
 
 const APP_URL = String(process.env.APP_URL || 'http://localhost:5173').replace(/\/+$/, '');
 const STORE_NAME = process.env.VITE_STORE_NAME || 'TechMart';
 const CURRENCY = process.env.VITE_CURRENCY || 'NGN';
+
+/** Parses an optional boolean env var. Returns undefined when unset or blank. */
+function parseBool(value) {
+  if (value === undefined || value === null || String(value).trim() === '') return undefined;
+  return /^(1|true|yes|on)$/i.test(String(value).trim());
+}
+
+/**
+ * Builds the Nodemailer transport, once per invocation.
+ *
+ * `SMTP_URL` (a single connection string) wins when both styles are supplied;
+ * otherwise `SMTP_HOST`/`SMTP_PORT` are used, and `SMTP_SERVICE` (e.g. "Gmail")
+ * fills host/port/secure in for a well-known provider. `secure: true` means
+ * implicit TLS - what port 465 speaks - while 587 upgrades through STARTTLS on
+ * its own, so it is derived from the port unless SMTP_SECURE overrides it.
+ *
+ * Pooling is deliberately off: a serverless invocation sends one message and
+ * returns, and a pool would keep the socket - and the function - alive.
+ */
+let transporter = null;
+
+function getTransporter() {
+  if (transporter) return transporter;
+
+  const options = {
+    // Fail fast rather than holding the invocation open until it is killed.
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  };
+
+  if (SMTP_SERVICE) options.service = SMTP_SERVICE;
+
+  if (SMTP_URL) {
+    options.url = SMTP_URL;
+  } else {
+    options.host = SMTP_HOST;
+    options.port = SMTP_PORT;
+    options.secure = SMTP_SECURE === undefined ? SMTP_PORT === 465 : SMTP_SECURE;
+  }
+
+  if (SMTP_USER) options.auth = { user: SMTP_USER, pass: SMTP_PASS };
+
+  transporter = nodemailer.createTransport(options);
+  return transporter;
+}
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -77,9 +131,10 @@ export default async function handler(req, res) {
   const missing = [];
   if (!SUPABASE_URL) missing.push('VITE_SUPABASE_URL');
   if (!SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY');
-  if (!MAILGUN_API_KEY) missing.push('MAILGUN_API_KEY');
-  if (!MAILGUN_DOMAIN) missing.push('MAILGUN_DOMAIN');
-  if (!FROM_EMAIL) missing.push('MAILGUN_FROM_EMAIL');
+  if (!FROM_EMAIL) missing.push('MAIL_FROM_EMAIL');
+  if (!SMTP_URL && !SMTP_HOST && !SMTP_SERVICE) {
+    missing.push('SMTP_HOST (or SMTP_URL / SMTP_SERVICE)');
+  }
   if (missing.length > 0) {
     console.error('[send-order-email] missing env vars:', missing.join(', '));
     return json(res, 500, {
@@ -143,54 +198,37 @@ export default async function handler(req, res) {
     return json(res, 403, { error: 'You are not allowed to email this order.' });
   }
 
-  // ---- 4. build and send the Mailgun message ------------------------------
+  // ---- 4. build and send the confirmation email ---------------------------
   const items = Array.isArray(order.order_items) ? order.order_items : [];
   const toEmail = order.email || user.email;
   const toName = order.full_name || 'there';
   const subject = `Order confirmed - ${order.order_number} | ${STORE_NAME}`;
 
-  const form = new URLSearchParams();
-  form.set('from', `${FROM_NAME} <${FROM_EMAIL}>`);
-  form.set('to', toEmail);
-  form.set('subject', subject);
-  if (REPLY_TO) form.set('h:Reply-To', REPLY_TO);
-  form.set('o:tracking', 'no');
-  form.set('text', buildTextEmail({ order, items, toName }));
-  form.set('html', buildHtmlEmail({ order, items, toName }));
-
   try {
-    const mailgunRes = await fetch(`${MAILGUN_API_BASE}/v3/${MAILGUN_DOMAIN}/messages`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${Buffer.from(`api:${MAILGUN_API_KEY}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: form.toString(),
+    const info = await getTransporter().sendMail({
+      from: { name: FROM_NAME, address: FROM_EMAIL },
+      to: { name: toName, address: toEmail },
+      replyTo: REPLY_TO || undefined,
+      subject,
+      text: buildTextEmail({ order, items, toName }),
+      html: buildHtmlEmail({ order, items, toName }),
     });
 
-    if (!mailgunRes.ok) {
-      const detail = await mailgunRes.text();
-      console.error('[send-order-email] Mailgun rejected the request:', mailgunRes.status, detail);
-      return json(res, 502, {
-        emailSent: false,
-        error:
-          'Your order was placed successfully, but we could not send the confirmation email. ' +
-          'The store has been notified.',
-      });
-    }
-
-    console.log(`[send-order-email] confirmation for ${order.order_number} sent to ${toEmail}`);
+    console.log(
+      `[send-order-email] confirmation for ${order.order_number} sent to ${toEmail} ` +
+        `(messageId ${info?.messageId || 'unknown'})`,
+    );
     return json(res, 200, {
       emailSent: true,
       message: `A confirmation email has been sent to ${toEmail}.`,
     });
   } catch (error) {
-    console.error('[send-order-email] Mailgun request failed:', error);
+    console.error('[send-order-email] SMTP send failed:', error?.message || error);
     return json(res, 502, {
       emailSent: false,
       error:
-        'Your order was placed successfully, but the confirmation email could not be sent. ' +
-        'Check your connection and try again later.',
+        'Your order was placed successfully, but we could not send the confirmation email. ' +
+        'The store has been notified.',
     });
   }
 }

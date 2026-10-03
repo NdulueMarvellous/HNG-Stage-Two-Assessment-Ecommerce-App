@@ -56,9 +56,10 @@ export async function placeOrder(customer, items) {
 }
 
 /**
- * Asks the serverless function in /api to email the confirmation through
- * Mailgun. The Mailgun key stays on the server; this call just forwards the
- * caller's Supabase access token so the function can verify who is asking.
+ * Asks the serverless function in /api to email the confirmation over SMTP
+ * with Nodemailer. The SMTP credentials stay on the server; this call just
+ * forwards the caller's Supabase access token so the function can verify who
+ * is asking.
  *
  * Email failure never invalidates an order, so this resolves with
  * { emailSent: false, error } instead of throwing.

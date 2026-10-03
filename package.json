@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Full-stack e-commerce shop built with React + Vite, Tailwind CSS, Supabase (Postgres + Auth + Google OAuth), Mailgun and Vercel.",
+  "description": "Full-stack e-commerce shop built with React + Vite, Tailwind CSS, Supabase (Postgres + Auth + Google OAuth), Nodemailer and Vercel.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
+    "nodemailer": "^10.0.13",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2"
@@ -30,6 +31,6 @@
     "vite": "^5.4.11"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

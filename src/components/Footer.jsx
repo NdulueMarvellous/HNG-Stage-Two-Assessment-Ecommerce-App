@@ -13,7 +13,7 @@ export default function Footer() {
           </div>
           <p className="mt-3 text-sm leading-relaxed text-slate-500">
             A demo storefront built with React, Vite, Tailwind CSS, Supabase (Postgres + Auth) and
-            Mailgun, deployed on Vercel.
+            Nodemailer, deployed on Vercel.
           </p>
         </div>
 

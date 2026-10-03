@@ -9,7 +9,7 @@ import { STORE_NAME } from '../lib/constants';
 const HIGHLIGHTS = [
   { title: 'Real authentication', body: 'Sign in with Google through Supabase Auth.' },
   { title: 'Live stock', body: 'Stock is checked and reduced in Postgres at checkout.' },
-  { title: 'Email receipts', body: 'Order confirmations are sent with Mailgun.' },
+  { title: 'Email receipts', body: 'Order confirmations are sent over SMTP with Nodemailer.' },
 ];
 
 export default function Home() {

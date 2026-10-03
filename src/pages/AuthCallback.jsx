@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageLoader } from '../components/Feedback';
 import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../lib/errors';
 import { supabase } from '../lib/supabase';
 
 const REDIRECT_KEY = 'techmart.redirectAfterAuth';
@@ -21,9 +22,18 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const oauthError = params.get('error_description') || params.get('error');
+    // Implicit-flow providers put the error in the fragment instead of the query,
+    // so read both before giving up.
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const oauthError =
+      params.get('error_description') ||
+      params.get('error') ||
+      hashParams.get('error_description') ||
+      hashParams.get('error');
     if (oauthError) {
-      setError(oauthError.replace(/\+/g, ' '));
+      // run the provider's raw message through the shared translator so the common
+      // Supabase/Google misconfigurations read as something actionable.
+      setError(getErrorMessage(oauthError.replace(/\+/g, ' ')));
       setWaiting(false);
       return;
     }

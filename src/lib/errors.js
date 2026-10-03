@@ -15,6 +15,14 @@ const RULES = [
   [/password should be at least (\d+)/i, 'Your password must be at least 8 characters long.'],
   [/signups not allowed|signup is disabled/i, 'New sign-ups are currently disabled for this project.'],
   [/provider is not enabled|unsupported provider/i, 'Google sign-in is not enabled yet. Enable it in Supabase -> Authentication -> Providers.'],
+  [
+    /unable to exchange external code|unable to exchange code/i,
+    'Google sign-in could not be completed. Re-paste the Client ID AND Client secret in Supabase -> Authentication -> Providers -> Google from the same OAuth client, and make sure that client lists https://<project-ref>.supabase.co/auth/v1/callback as an Authorised redirect URI.',
+  ],
+  [
+    /redirect_uri_mismatch/i,
+    'Google rejected the redirect URI. Add https://<project-ref>.supabase.co/auth/v1/callback (the Supabase callback, not this app\'s) to the OAuth client\'s Authorised redirect URIs in the Google Cloud Console.',
+  ],
   [/jwt expired|token has expired|invalid claim/i, 'Your session has expired. Please sign in again.'],
   [/invalid api key|no api key found/i, 'Supabase credentials look wrong. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'],
   [/failed to fetch|networkerror|load failed|network request failed|err_network|fetch failed/i, 'We could not reach the server. Check your internet connection and try again.'],
