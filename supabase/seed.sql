@@ -197,5 +197,12 @@ insert into public.products (id, name, description, price, image_url, category, 
   'https://images.unsplash.com/photo-1598550476439-6847785fcea6?auto=format&fit=crop&w=900&q=80',
   'Gaming', 0
 )
-on conflict (id) do nothing;
+on conflict (id) do update set
+  name = excluded.name,
+  description = excluded.description,
+  price = excluded.price,
+  image_url = excluded.image_url,
+  category = excluded.category,
+  stock = excluded.stock;
+
 
