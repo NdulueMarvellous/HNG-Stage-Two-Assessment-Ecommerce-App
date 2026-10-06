@@ -55,6 +55,27 @@ export async function placeOrder(customer, items) {
   return data;
 }
 
+export async function updateOrderStatus(orderId, status) {
+  if (!isSupabaseConfigured) return null;
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ status })
+      .eq('id', orderId)
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.warn('[orders] could not update status:', error.message);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.warn('[orders] status update exception:', err);
+    return null;
+  }
+}
+
 /**
  * Asks the serverless function in /api to email the confirmation over SMTP
  * with Nodemailer. The SMTP credentials stay on the server; this call just

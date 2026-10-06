@@ -73,25 +73,41 @@ export default function OrderSuccess() {
   }
 
   const items = order.order_items ?? [];
+  const paymentMethodName = location.state?.paymentMethod || 'Credit / Debit Card (Stripe)';
+
+  function copyOrderNumber() {
+    navigator.clipboard.writeText(order.order_number);
+    toast.success(`Copied ${order.order_number} to clipboard!`);
+  }
 
   return (
     <div className="container-page py-12">
       <div className="mx-auto max-w-3xl">
-        <div className="card overflow-hidden">
-          <div className="border-b border-emerald-100 bg-emerald-50 px-6 py-8 text-center">
-            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-600 text-2xl text-white">
+        <div className="card overflow-hidden shadow-lift">
+          <div className="border-b border-emerald-100 bg-gradient-to-b from-emerald-50 to-white px-6 py-8 text-center">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-600 text-2xl text-white shadow-sm">
               ✓
             </span>
-            <h1 className="mt-4 text-2xl font-bold text-emerald-900">
-              Thank you, your order is confirmed
+            <h1 className="mt-4 text-2xl font-bold tracking-tight text-emerald-950">
+              Thank you, your order is placed!
             </h1>
-            <p className="mt-2 text-sm text-emerald-800">
-              Order <span className="font-semibold">{order.order_number}</span> was placed on{' '}
-              {formatDate(order.created_at)}.
-            </p>
+            <div className="mt-2.5 flex items-center justify-center gap-2 text-sm text-emerald-800">
+              <span>Order Number: <strong className="font-mono font-bold text-slate-900">{order.order_number}</strong></span>
+              <button
+                type="button"
+                onClick={copyOrderNumber}
+                className="rounded p-1 text-slate-500 hover:bg-emerald-100 hover:text-slate-700"
+                title="Copy order number"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">Placed on {formatDate(order.created_at)}</p>
           </div>
 
-          <div className="space-y-6 p-6">
+          <div className="space-y-6 p-6 sm:p-8">
             {email ? (
               email.emailSent ? (
                 <Alert variant="success" title="Confirmation email sent">
@@ -128,29 +144,30 @@ export default function OrderSuccess() {
             )}
 
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Order summary
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                Purchased Items
               </h2>
-              <ul className="mt-3 divide-y divide-slate-100">
+              <ul className="mt-3 divide-y divide-slate-100 border-y border-slate-100">
                 {items.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between gap-4 py-3">
+                  <li key={item.id} className="flex items-center justify-between gap-4 py-3.5">
                     <div className="flex items-center gap-3">
-                      <span className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500">
+                      <span className="grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-xs font-bold text-slate-700">
                         {item.quantity}×
                       </span>
                       <div>
-                        <p className="text-sm font-medium text-slate-900">{item.product_name}</p>
+                        <p className="text-sm font-semibold text-slate-900">{item.product_name}</p>
                         <p className="text-xs text-slate-500">{formatPrice(item.unit_price)} each</p>
                       </div>
                     </div>
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-bold text-slate-900">
                       {formatPrice(item.line_total)}
                     </p>
                   </li>
                 ))}
               </ul>
             </div>
-<dl className="space-y-2 border-t border-slate-200 pt-4 text-sm">
+
+            <dl className="space-y-2 border-t border-slate-200 pt-4 text-sm">
               <div className="flex justify-between">
                 <dt className="text-slate-500">Subtotal</dt>
                 <dd className="font-medium text-slate-900">{formatPrice(order.subtotal)}</dd>
@@ -162,14 +179,14 @@ export default function OrderSuccess() {
                 </dd>
               </div>
               <div className="flex justify-between border-t border-slate-200 pt-3 text-base">
-                <dt className="font-semibold text-slate-900">Total</dt>
-                <dd className="font-bold text-slate-900">{formatPrice(order.total)}</dd>
+                <dt className="font-bold text-slate-900">Total Paid</dt>
+                <dd className="font-extrabold text-slate-900">{formatPrice(order.total)}</dd>
               </div>
             </dl>
 
-            <div className="grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
+            <div className="grid gap-4 rounded-2xl bg-slate-50 p-5 sm:grid-cols-2">
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Delivery address
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-700">
@@ -184,26 +201,31 @@ export default function OrderSuccess() {
                 </p>
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Status
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Payment & Status
                 </h3>
-                <p className="mt-2">
-                  <span
-                    className={`badge capitalize ${
-                      ORDER_STATUSES[order.status] || 'bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                </p>
-                <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Receipt email
-                </h3>
-                <p className="mt-2 break-all text-sm text-slate-700">{order.email}</p>
+                <div className="mt-2 space-y-1 text-sm">
+                  <p className="text-slate-600">
+                    Payment Method: <span className="font-semibold text-slate-900">{paymentMethodName}</span>
+                  </p>
+                  <p className="text-slate-600">
+                    Order Status:{' '}
+                    <span
+                      className={`badge capitalize ml-1 ${
+                        ORDER_STATUSES[order.status] || 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {order.status}
+                    </span>
+                  </p>
+                  <p className="text-slate-600">
+                    Receipt sent to: <span className="font-medium text-slate-900">{order.email}</span>
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 pt-2">
               <Link to="/orders" className="btn-primary">
                 View my orders
               </Link>
@@ -216,4 +238,4 @@ export default function OrderSuccess() {
       </div>
     </div>
   );
-}
+}

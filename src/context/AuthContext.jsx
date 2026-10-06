@@ -153,6 +153,16 @@ export function AuthProvider({ children }) {
     setProfile(null);
   }, []);
 
+  const resetPassword = useCallback(async (email) => {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase is not configured yet. Add your keys to .env to enable password reset.');
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(String(email).trim(), {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (error) throw new Error(getErrorMessage(error));
+  }, []);
+
   /** Saves checkout details on the profile so the form is pre-filled next time. */
   const updateProfile = useCallback(
     async (updates) => {
@@ -188,6 +198,7 @@ export function AuthProvider({ children }) {
       signInWithGoogle,
       signInWithEmail,
       signUpWithEmail,
+      resetPassword,
       signOut,
       updateProfile,
       refreshProfile: () => (user ? fetchProfile(user.id).then(setProfile) : Promise.resolve(null)),
@@ -201,6 +212,7 @@ export function AuthProvider({ children }) {
       signInWithGoogle,
       signInWithEmail,
       signUpWithEmail,
+      resetPassword,
       signOut,
       updateProfile,
       fetchProfile,

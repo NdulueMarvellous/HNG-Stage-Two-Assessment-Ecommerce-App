@@ -147,11 +147,16 @@ drop policy if exists "products_select_public" on public.products;
 create policy "products_select_public" on public.products
   for select using (is_active = true);
 
--- orders: users can read their own orders only. Inserts happen exclusively
+-- orders: users can read and update their own orders. Inserts happen exclusively
 -- through place_order() (SECURITY DEFINER), so no insert policy is defined.
 drop policy if exists "orders_select_own" on public.orders;
 create policy "orders_select_own" on public.orders
   for select using (auth.uid() = user_id);
+
+drop policy if exists "orders_update_own" on public.orders;
+create policy "orders_update_own" on public.orders
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
 
 -- order_items: visible when the parent order belongs to the user
 drop policy if exists "order_items_select_own" on public.order_items;

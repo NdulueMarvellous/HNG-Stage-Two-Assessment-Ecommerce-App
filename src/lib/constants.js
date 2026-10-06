@@ -22,7 +22,13 @@ export const ORDER_STATUSES = {
   cancelled: 'bg-rose-100 text-rose-800',
 };
 
+export const PAYMENT_METHODS = {
+  card: { id: 'card', name: 'Credit / Debit Card (Stripe)', desc: 'Pay instantly with Visa, Mastercard, or Verve' },
+  pod: { id: 'pod', name: 'Pay on Delivery', desc: 'Pay with cash or POS transfer upon arrival' },
+};
+
 export const SUPPORT = {
   email: 'support@techmart.example',
   phone: '+234 800 000 0000',
 };
+
