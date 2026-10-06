@@ -1,5 +1,5 @@
 /**
- * Store-wide constants.
+ * Store-wide configuration values.
  *
  * DELIVERY_FEE / FREE_DELIVERY_THRESHOLD are for display only: the same two
  * numbers live in supabase/schema.sql (place_order) where the real totals are
@@ -31,4 +31,3 @@ export const SUPPORT = {
   email: 'support@techmart.example',
   phone: '+234 800 000 0000',
 };
-

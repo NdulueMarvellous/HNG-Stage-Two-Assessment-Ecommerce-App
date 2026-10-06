@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Alert, EmptyState, Spinner } from '../components/Feedback';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { fetchProductsByIds } from '../lib/products';
-import { getErrorMessage } from '../lib/errors';
-import { formatPrice, FALLBACK_IMAGE } from '../lib/format';
-import { FREE_DELIVERY_THRESHOLD, MAX_PER_ITEM } from '../lib/constants';
+import { useCart } from '../features/commerce/CartContext';
+import { useAuth } from '../features/auth/AuthContext';
+import { useToast } from '../features/notifications/ToastContext';
+import { fetchProductsByIds } from '../features/catalog/catalog-service';
+import { getErrorMessage } from '../lib/error-messages';
+import { formatPrice, FALLBACK_IMAGE } from '../lib/formatters';
+import { FREE_DELIVERY_THRESHOLD, MAX_PER_ITEM } from '../lib/store-config';
 
 export default function Cart() {
   const {

@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { Alert, EmptyState, ProductGridSkeleton } from '../components/Feedback';
-import { fetchProducts } from '../lib/products';
-import { getErrorMessage } from '../lib/errors';
+import { fetchProducts } from '../features/catalog/catalog-service';
+import { getErrorMessage } from '../lib/error-messages';
 
 
 const SORTS = {

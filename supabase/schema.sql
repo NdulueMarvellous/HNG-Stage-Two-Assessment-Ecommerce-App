@@ -321,7 +321,7 @@ begin
   end if;
 
   -- 6.5 authoritative totals ------------------------------------------------
-  -- Keep these two numbers in sync with src/lib/constants.js
+  -- Keep these two numbers in sync with src/lib/store-config.js
   -- (2500 = flat delivery fee, 150000 = free-delivery threshold, in NGN).
   v_delivery := case when v_subtotal >= 150000 then 0 else 2500 end;
   v_total    := v_subtotal + v_delivery;
@@ -380,4 +380,3 @@ $$;
 -- Only signed-in users may call the function (PUBLIC/anon execute is revoked).
 revoke all on function public.place_order(jsonb, jsonb) from public;
 grant execute on function public.place_order(jsonb, jsonb) to authenticated;
-

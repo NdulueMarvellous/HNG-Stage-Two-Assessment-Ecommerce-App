@@ -4,7 +4,7 @@ const url = import.meta.env.VITE_SUPABASE_URL;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 /**
- * True once real credentials are present in .env.
+ * True once real credentials are configured in the environment.
  * The UI shows a setup banner when this is false so the app never fails
  * silently on a fresh clone.
  */

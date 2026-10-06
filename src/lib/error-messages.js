@@ -1,9 +1,9 @@
-import { isValidEmail, digitsOnly } from './format';
+import { isValidEmail, digitsOnly } from './formatters';
 
 const FALLBACK = 'Something went wrong. Please try again.';
 
 /**
- * Auth / database / network messages are technical by default, so the most
+ * Auth, database, and network messages are technical by default, so the most
  * common ones are translated into something a shopper can act on. Messages
  * raised by place_order() in Postgres are already human readable and are
  * passed through unchanged.

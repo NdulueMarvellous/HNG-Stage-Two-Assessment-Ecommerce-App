@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured } from '../lib/supabase-client';
 
 /** Shown when .env still holds the placeholder keys, so the cause is obvious. */
 function SetupBanner() {

@@ -1,4 +1,4 @@
-import { CURRENCY } from './constants';
+import { CURRENCY } from './store-config';
 
 const LOCALES = { NGN: 'en-NG', USD: 'en-US', GBP: 'en-GB', EUR: 'de-DE' };
 

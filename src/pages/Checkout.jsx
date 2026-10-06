@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Alert, EmptyState, Spinner } from '../components/Feedback';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
-import { fetchProductsByIds } from '../lib/products';
-import { placeOrder, sendOrderConfirmationEmail, updateOrderStatus } from '../lib/orders';
-import { getErrorMessage, validateCheckout } from '../lib/errors';
-import { formatPrice } from '../lib/format';
-import { PAYMENT_METHODS } from '../lib/constants';
+import { useAuth } from '../features/auth/AuthContext';
+import { useCart } from '../features/commerce/CartContext';
+import { useToast } from '../features/notifications/ToastContext';
+import { fetchProductsByIds } from '../features/catalog/catalog-service';
+import { placeOrder, sendOrderConfirmationEmail, updateOrderStatus } from '../features/commerce/order-service';
+import { getErrorMessage, validateCheckout } from '../lib/error-messages';
+import { formatPrice } from '../lib/formatters';
+import { PAYMENT_METHODS } from '../lib/store-config';
 
 const EMPTY_FORM = {
   full_name: '',

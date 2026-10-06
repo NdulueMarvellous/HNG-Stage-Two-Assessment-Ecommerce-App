@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { Alert, PageLoader } from '../components/Feedback';
-import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
-import { fetchProductById, fetchProducts } from '../lib/products';
-import { getErrorMessage } from '../lib/errors';
-import { formatPrice, FALLBACK_IMAGE } from '../lib/format';
-import { MAX_PER_ITEM } from '../lib/constants';
+import { useCart } from '../features/commerce/CartContext';
+import { useToast } from '../features/notifications/ToastContext';
+import { fetchProductById, fetchProducts } from '../features/catalog/catalog-service';
+import { getErrorMessage } from '../lib/error-messages';
+import { formatPrice, FALLBACK_IMAGE } from '../lib/formatters';
+import { MAX_PER_ITEM } from '../lib/store-config';
 
 export default function ProductDetails() {
   const { id } = useParams();

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Spinner } from '../components/Feedback';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { getErrorMessage } from '../lib/errors';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { useAuth } from '../features/auth/AuthContext';
+import { useToast } from '../features/notifications/ToastContext';
+import { getErrorMessage } from '../lib/error-messages';
+import { isSupabaseConfigured } from '../lib/supabase-client';
 
 const REDIRECT_KEY = 'techmart.redirectAfterAuth';
 

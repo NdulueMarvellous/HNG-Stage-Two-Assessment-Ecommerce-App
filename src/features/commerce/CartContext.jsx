@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { MAX_PER_ITEM, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD } from '../lib/constants';
+import { MAX_PER_ITEM, DELIVERY_FEE, FREE_DELIVERY_THRESHOLD } from '../../lib/store-config';
 
 const CartContext = createContext(null);
 const STORAGE_KEY = 'techmart.cart.v1';

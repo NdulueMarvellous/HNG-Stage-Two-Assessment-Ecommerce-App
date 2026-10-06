@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { Alert, ProductGridSkeleton } from '../components/Feedback';
-import { fetchProducts } from '../lib/products';
-import { getErrorMessage } from '../lib/errors';
-import { STORE_NAME } from '../lib/constants';
+import { fetchProducts } from '../features/catalog/catalog-service';
+import { getErrorMessage } from '../lib/error-messages';
+import { STORE_NAME } from '../lib/store-config';
 
 const HIGHLIGHTS = [
   { title: 'Real authentication', body: 'Sign in with Google through Supabase Auth.' },

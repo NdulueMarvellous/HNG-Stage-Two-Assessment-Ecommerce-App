@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-const ToastContext = createContext(null);
+const NotificationContext = createContext(null);
 
 let nextId = 1;
 
@@ -44,7 +44,7 @@ export function ToastProvider({ children }) {
   );
 
   return (
-    <ToastContext.Provider value={value}>
+    <NotificationContext.Provider value={value}>
       {children}
       <div
         className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 sm:bottom-6 sm:left-auto sm:right-6 sm:items-end sm:px-0"
@@ -71,12 +71,12 @@ export function ToastProvider({ children }) {
           </div>
         ))}
       </div>
-    </ToastContext.Provider>
+    </NotificationContext.Provider>
   );
 }
 
 export function useToast() {
-  const context = useContext(ToastContext);
+  const context = useContext(NotificationContext);
   if (!context) throw new Error('useToast must be used inside a <ToastProvider>.');
   return context;
 }

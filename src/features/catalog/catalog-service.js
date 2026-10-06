@@ -1,5 +1,5 @@
-import { supabase, isSupabaseConfigured } from './supabase';
-import { getErrorMessage } from './errors';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase-client';
+import { getErrorMessage } from '../../lib/error-messages';
 
 const NOT_CONFIGURED =
   'Supabase is not configured yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to .env and restart the dev server.';
@@ -39,31 +39,4 @@ export async function fetchProductsByIds(ids) {
   const { data, error } = await supabase.from('products').select('*').in('id', ids);
   if (error) throw new Error(getErrorMessage(error, 'We could not refresh your cart.'));
   return data ?? [];
-}
-
-/** The signed-in user's orders, newest first, with their line items. */
-export async function fetchMyOrders(userId) {
-  assertConfigured();
-  if (!userId) throw new Error('You must be signed in to view your orders.');
-
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*, order_items(*)')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw new Error(getErrorMessage(error, 'We could not load your orders.'));
-  return data ?? [];
-}
-
-export async function fetchOrderById(orderId) {
-  assertConfigured();
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*, order_items(*)')
-    .eq('id', orderId)
-    .maybeSingle();
-
-  if (error) throw new Error(getErrorMessage(error, 'We could not load that order.'));
-  return data ?? null;
 }

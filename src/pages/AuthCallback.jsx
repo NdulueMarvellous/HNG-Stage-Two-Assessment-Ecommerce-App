@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageLoader } from '../components/Feedback';
-import { useAuth } from '../context/AuthContext';
-import { getErrorMessage } from '../lib/errors';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../features/auth/AuthContext';
+import { getErrorMessage } from '../lib/error-messages';
+import { supabase } from '../lib/supabase-client';
 
 const REDIRECT_KEY = 'techmart.redirectAfterAuth';
 

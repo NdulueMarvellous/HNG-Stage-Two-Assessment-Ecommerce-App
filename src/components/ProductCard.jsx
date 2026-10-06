@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
-import { formatPrice, FALLBACK_IMAGE } from '../lib/format';
+import { useCart } from '../features/commerce/CartContext';
+import { useToast } from '../features/notifications/ToastContext';
+import { formatPrice, FALLBACK_IMAGE } from '../lib/formatters';
 
 /** Stock badge wording + colours. */
 function stockBadge(stock) {

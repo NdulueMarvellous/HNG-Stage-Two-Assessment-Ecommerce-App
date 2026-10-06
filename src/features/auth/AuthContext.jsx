@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { supabase, isSupabaseConfigured, isProviderEnabled } from '../lib/supabase';
-import { getErrorMessage } from '../lib/errors';
+import { supabase, isSupabaseConfigured, isProviderEnabled } from '../../lib/supabase-client';
+import { getErrorMessage } from '../../lib/error-messages';
 
 const AuthContext = createContext(null);
 

@@ -60,8 +60,12 @@ placement and Nodemailer email receipts, deployed on Vercel.
 ├── src/
 │   ├── components/              # Layout, Navbar, Footer, ProductCard, Feedback,
 │   │                            # ProtectedRoute, ErrorBoundary
-│   ├── context/                 # AuthContext, CartContext, ToastContext
-│   ├── lib/                     # supabase client, products, orders, format, errors, constants
+│   ├── features/
+│   │   ├── auth/                 # Authentication state and actions
+│   │   ├── catalog/              # Product catalogue data access
+│   │   ├── commerce/             # Cart state and order workflows
+│   │   └── notifications/        # Toast notification state
+│   ├── lib/                     # Shared Supabase client, config, formatting, and errors
 │   ├── pages/                   # Home, Shop, ProductDetails, Cart, Checkout, OrderSuccess,
 │   │                            # MyOrders, Login, AuthCallback, NotFound
 │   ├── App.jsx                  # Routes + providers
@@ -210,7 +214,7 @@ To put **TechMart** on the screen:
 | Sign-in loops back to `/login` with no session | The app origin is missing from Supabase **Redirect URLs** | Add `<origin>/auth/callback` (local **and** production) in **Authentication → URL Configuration** |
 
 `/auth/callback` forwards the raw `error_description` through the shared translator in
-`src/lib/errors.js`, so the two OAuth misconfigurations above appear as actionable text
+`src/lib/error-messages.js`, so the two OAuth misconfigurations above appear as actionable text
 instead of a bare Supabase error string.
 
 ---
@@ -352,7 +356,7 @@ the email could not be sent.
 
 > The delivery numbers are **display only**. The authoritative calculation lives in
 > `supabase/schema.sql → place_order()`. If you change them in one place, change them
-> in the other (`src/lib/constants.js`) and re-run the SQL.
+> in the other (`src/lib/store-config.js`) and re-run the SQL.
 
 ---
 
@@ -438,7 +442,7 @@ The browser **never sends a price**. This is what happens at checkout:
 
 ```
 Checkout.jsx
-   └─ lib/orders.js → supabase.rpc('place_order', { p_customer, p_items })
+   └─ features/commerce/order-service.js → supabase.rpc('place_order', { p_customer, p_items })
         └─ Postgres place_order()                         [one transaction]
              1. reject an empty / unauthenticated cart
              2. lock each product row  (SELECT … FOR UPDATE)
@@ -447,7 +451,7 @@ Checkout.jsx
              5. apply delivery fee  (0 when subtotal ≥ 150000, else 2500)
              6. INSERT orders + order_items, then reduce products.stock
              7. RETURN the created order (id, order_number, totals, status)
-   └─ lib/orders.js → POST /api/send-order-email → Nodemailer (SMTP) receipt
+   └─ features/commerce/order-service.js → POST /api/send-order-email → Nodemailer (SMTP) receipt
 ```
 
 Because pricing, validation and stock decrement happen together inside Postgres, two
@@ -505,7 +509,7 @@ Requires **Node.js ≥ 20** (required by Nodemailer 10).
 - No real payment gateway — this is a demo storefront, as stated in the footer.
 - Stock is decremented at order time only; there is no reservation/expiry window.
 - Order statuses (`pending`, `confirmed`, `processing`, `shipped`, `delivered`,
-  `cancelled`) are defined in `src/lib/constants.js`; changing them is an admin/SQL task.
+  `cancelled`) are defined in `src/lib/store-config.js`; changing them is an admin/SQL task.
 - The demo catalogue in `supabase/seed.sql` uses remote Unsplash images.
 
 ## License

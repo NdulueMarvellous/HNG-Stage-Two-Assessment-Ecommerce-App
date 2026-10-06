@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, EmptyState, PageLoader, Spinner } from '../components/Feedback';
-import { useAuth } from '../context/AuthContext';
-import { useToast } from '../context/ToastContext';
-import { fetchMyOrders } from '../lib/products';
-import { sendOrderConfirmationEmail } from '../lib/orders';
-import { getErrorMessage } from '../lib/errors';
-import { formatPrice, formatDate } from '../lib/format';
-import { ORDER_STATUSES } from '../lib/constants';
+import { useAuth } from '../features/auth/AuthContext';
+import { useToast } from '../features/notifications/ToastContext';
+import { fetchMyOrders, sendOrderConfirmationEmail } from '../features/commerce/order-service';
+import { getErrorMessage } from '../lib/error-messages';
+import { formatPrice, formatDate } from '../lib/formatters';
+import { ORDER_STATUSES } from '../lib/store-config';
 
 export default function MyOrders() {
   const { user } = useAuth();

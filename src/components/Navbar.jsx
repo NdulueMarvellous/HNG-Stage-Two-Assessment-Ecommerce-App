@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
-import { STORE_NAME } from '../lib/constants';
+import { useAuth } from '../features/auth/AuthContext';
+import { useCart } from '../features/commerce/CartContext';
+import { useToast } from '../features/notifications/ToastContext';
+import { STORE_NAME } from '../lib/store-config';
 
 const NAV = [
   { to: '/', label: 'Home' },
